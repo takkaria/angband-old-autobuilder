@@ -36,31 +36,27 @@ cp -r trunk b/native &&
   cp -r trunk b/linux
 
 # Windows native build
-cd $NIGHTLY/b/native/src &&
-  make -f Makefile.win CROSS="ccache i586-mingw32msvc-" MINGW=yes &&
-  cd ../ &&
-  scripts/pkg_win angband-$DATE &&
-  cp angband-$DATE.zip $OUT &&
-  WORKED=$WORKED:
+cd $NIGHTLY/b/native &&
+  make -C src -f Makefile.win CROSS="ccache i586-mingw32msvc-" MINGW=yes &&
+  scripts/pkg_win angband-$DATE $OUT/angband-$DATE.zip &&
+  echo "Windows build success."
 
 # Windows console build
-cd $NIGHTLY/b/console/src &&
-  make -f Makefile.win CROSS="ccache i586-mingw32msvc-" CONSOLE=yes \
+cd $NIGHTLY/b/console &&
+  make -C src -f Makefile.win CROSS="ccache i586-mingw32msvc-" CONSOLE=yes \
     PDCURSES_INC=$PDC_INC PDCURSES_LIB=$PDC_LIB MINGW=yes &&
-  cd ../ &&
-  scripts/pkg_win angband-$DATE-con &&
-  cp angband-$DATE-con.zip $OUT &&
-  WORKED=$WORKED
+  scripts/pkg_win angband-$DATE-con $OUT/angband-$DATE-con.zip &&
+  echo "Windows console build success."
 
 # Linux native build (ncurses)
 cd $NIGHTLY/b/linux &&
   ./autogen.sh &&
   ./configure &&
-  touch .depend &&
   make &&
-  WORKED_GCU=angband-$DATE-con.zip
+  echo "Linux native build success."
 
 # End
 cd $NIGHTLY &&
   rm -rf b
+
 echo Builds finished at `date --iso=seconds`.
