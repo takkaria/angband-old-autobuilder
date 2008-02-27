@@ -53,7 +53,11 @@ for line in f:lines(arg[1]) do
 		if warning:find("near initialization", 1, true) then keep = false end
 		if warning:find("unused parameter", 1, true) then keep = false end
 
+		warning = warning:gsub(" arg ", " argument ")
+
 		warning = warning:gsub("`", "'")
+		warning = warning:gsub("’", "'")
+		warning = warning:gsub("‘", "'")
 	end
 
 	if keep then
