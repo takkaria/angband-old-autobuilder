@@ -1,0 +1,69 @@
+#!/usr/bin/env lua5.1
+
+-- Utility function
+function table.find(t, f)
+  for k, v in pairs(t) do
+    if f(k, v) then return k, v end
+  end
+end
+
+
+-- Real code
+local keeps = {}
+
+for line in io.lines("stderr.txt") do
+  local keep = true
+
+  -- Filter in
+  if not string.find(line, "warning", 1, true) and
+     not string.find(line, "error", 1, true) then keep = false end
+
+  -- Filter out
+  if string.find(line, "missing initializer", 1, true) then keep = false end
+  if string.find(line, "near initialization", 1, true) then keep = false end
+  if string.find(line, "unused parameter", 1, true) then keep = false end
+
+  line = string.gsub(line, "`", "'")
+
+  if table.find(keeps, function(k, v)
+      if v == line then return true end
+    end) then keep = false end
+
+  -- Keep if unique
+  if keep then
+    table.insert(keeps, line)
+  end
+end
+
+-- Sort the table
+table.sort(keeps)
+
+local file, line, warning, _
+
+-- Now turn the text lines into table...
+for i = 1, #keeps do
+
+  _, _, file, line, warning = string.find(keeps[i], "([%a%d%.%-]+):(%d+): warning: (.*)")
+  if _ then
+    keeps[i] = { file = file, line = tonumber(line), warning = warning }
+  else
+    keeps[i] = nil
+  end
+
+end
+
+print "<ul>"
+
+for i = 1, #keeps do
+
+  if keeps[i] then
+    print("<li><a href='http://dev.rephial.org/trac/browser/trunk/src/" .. keeps[i].file .. "#L" .. keeps[i].line ..
+          "'>" .. keeps[i].file .. ":" .. keeps[i].line .. "</a>: " .. keeps[i].warning)
+  end
+
+end
+
+print "</ul>"
+
+os.execute(string.format("twyt tweet -u angband Angband built, %d warnings.", #keeps))
+

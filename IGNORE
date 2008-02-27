@@ -1,0 +1,4 @@
+# This ia a list of files for Subversion to ignore in this directory.
+stderr.txt
+stdout.txt
+PDCurses

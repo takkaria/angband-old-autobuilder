@@ -1,0 +1,57 @@
+The Angband autobuilder
+=======================
+
+This is an interesting mishmash of Lua and shell scripts.  To make it work
+properly you'll need:
+
+ - bash
+ - Subversion
+ - mingw32, the GCC cross-compiler for Windows
+ - ccache, a caching layer for compilation
+ - UPX, the executable packer
+ - Lua 5.1, in a place findable by /usr/bin/env
+
+Optionally, if you want to enable Twitter support, you will need:
+ - Twyt (http://andrewprice.me.uk/projects/twyt/)
+
+On debian systems, the above can be obtained by:
+ $ sudo aptitude install mingw32-bin upx-ucl lua5.1 ccache
+And to use the Twitter support, you will also need:
+ $ sudo aptitude install python-simplejson
+
+Using
+=====
+
+To use, simply run:
+
+  ~/autobuilder$ ./build-pdcurses
+  ~/autobuilder$ ./compile
+
+
+The scripts
+===========
+
+build-pdcurses
+--------------
+
+Gets PDCurses from CVS, builds it, and puts it in PDCurses.  When it asks you
+for a CVS password, just press Enter.
+
+compile
+-------
+
+This compiles the game:
+ - First it compiles the standard Windows port.
+ - Second it compiles the Windows console port, using PDCurses.
+ - Third it compiles the Linux port, using autoconf.
+
+It produces packaged Windows ports in out/.
+
+indexer
+-------
+
+This takes the warnings file and produces pretty HTML output linking to the 
+Trac instance on dev.rephial.org.
+
+This file also talks to twitter if it's around and tells it how many warnings
+the build has produced.

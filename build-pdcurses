@@ -1,0 +1,8 @@
+#!/bin/sh
+
+set -x
+
+cvs -d:pserver:anonymous@pdcurses.cvs.sourceforge.net:/cvsroot/pdcurses login
+cvs -z3 -d:pserver:anonymous@pdcurses.cvs.sourceforge.net:/cvsroot/pdcurses co -P PDCurses
+make -C PDCurses/win32/ -f mingwin32.mak CC=i586-mingw32msvc-gcc LINK=i586-mingw32msvc-gcc pdcurses.a
+i586-mingw32msvc-ranlib PDCurses/win32/pdcurses.a

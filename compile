@@ -1,0 +1,66 @@
+#!/bin/bash
+
+# Useful variables
+DATE=`date --iso -u`
+REALDATE=`date --iso=seconds`
+NIGHTLY=`pwd`
+OUT=`pwd`/out
+PDC_INC=`pwd`/PDCurses/
+PDC_LIB=`pwd`/PDCurses/win32/pdcurses.a
+
+# Redirect stdout & stderr
+exec >stdout.txt 2>stderr.txt
+
+rm -rf $OUT b
+mkdir -p $OUT b
+
+echo Builds started at `date --iso=seconds`.
+
+# Update SVN or check out, depending
+if test -d trunk ; then
+	cd trunk && svn update
+	if test $? -ne 0 ; then
+	  exit 1
+	fi
+	cd ..
+else
+	svn checkout http://dev.rephial.org/svn/trunk/
+	if test $? -ne 0 ; then
+	  exit 1
+	fi
+fi
+
+# Copy
+cp -r trunk b/native &&
+  cp -r trunk b/console &&
+  cp -r trunk b/linux
+
+# Windows native build
+cd $NIGHTLY/b/native/src &&
+  make -f Makefile.win CROSS="ccache i586-mingw32msvc-" MINGW=yes &&
+  cd ../ &&
+  scripts/pkg_win angband-$DATE &&
+  cp angband-$DATE.zip $OUT &&
+  WORKED=$WORKED:
+
+# Windows console build
+cd $NIGHTLY/b/console/src &&
+  make -f Makefile.win CROSS="ccache i586-mingw32msvc-" CONSOLE=yes \
+    PDCURSES_INC=$PDC_INC PDCURSES_LIB=$PDC_LIB MINGW=yes &&
+  cd ../ &&
+  scripts/pkg_win angband-$DATE-con &&
+  cp angband-$DATE-con.zip $OUT &&
+  WORKED=$WORKED
+
+# Linux native build (ncurses)
+cd $NIGHTLY/b/linux &&
+  ./autogen.sh &&
+  ./configure &&
+  touch .depend &&
+  make &&
+  WORKED_GCU=angband-$DATE-con.zip
+
+# End
+cd $NIGHTLY &&
+  rm -rf b
+echo Builds finished at `date --iso=seconds`.
