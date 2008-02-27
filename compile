@@ -8,9 +8,6 @@ OUT=`pwd`/out
 PDC_INC=`pwd`/PDCurses/
 PDC_LIB=`pwd`/PDCurses/win32/pdcurses.a
 
-# Redirect stdout & stderr
-exec >stdout.txt 2>stderr.txt
-
 rm -rf $OUT b
 mkdir -p $OUT b
 
@@ -51,7 +48,7 @@ cd $NIGHTLY/b/console &&
 # Linux native build (ncurses)
 cd $NIGHTLY/b/linux &&
   ./autogen.sh &&
-  ./configure &&
+  ./configure --with-private-dirs &&
   make &&
   echo "Linux native build success."
 
