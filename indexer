@@ -7,63 +7,104 @@ function table.find(t, f)
   end
 end
 
-
--- Real code
-local keeps = {}
-
-for line in io.lines("stderr.txt") do
-  local keep = true
-
-  -- Filter in
-  if not string.find(line, "warning", 1, true) and
-     not string.find(line, "error", 1, true) then keep = false end
-
-  -- Filter out
-  if string.find(line, "missing initializer", 1, true) then keep = false end
-  if string.find(line, "near initialization", 1, true) then keep = false end
-  if string.find(line, "unused parameter", 1, true) then keep = false end
-
-  line = string.gsub(line, "`", "'")
-
-  if table.find(keeps, function(k, v)
-      if v == line then return true end
-    end) then keep = false end
-
-  -- Keep if unique
-  if keep then
-    table.insert(keeps, line)
-  end
+if not arg[1] then
+	print(arg[0] .. ": error: No input file specified")
+	os.exit(1)
 end
 
--- Sort the table
-table.sort(keeps)
 
-local file, line, warning, _
+local errors, warnings = {}, {}
 
--- Now turn the text lines into table...
-for i = 1, #keeps do
+f = io.open(arg[1])
+if not f then
+	print(arg[0] .. ": error: error reading input file '" .. arg[1] .. "'")
+	os.exit(1)
+end
 
-  _, _, file, line, warning = string.find(keeps[i], "([%a%d%.%-]+):(%d+): warning: (.*)")
-  if _ then
-    keeps[i] = { file = file, line = tonumber(line), warning = warning }
-  else
-    keeps[i] = nil
-  end
+for line in f:lines(arg[1]) do
+	local keep = true
+	local error = false
+	local file, line_no, warning, _
+
+	_, _, file, line_no, warning = line:find("([%a%d%.%-]+):(%d+): warning: (.*)")
+
+	if not _ then
+		_, _, file, line_no, warning = line:find("([%a%d%.%-]+):(%d+): error: (.*)")
+		if _ then
+			error = true
+			line_no = tonumber(line_no)
+		else
+			_, _, file, warning = line:find("([%a%d%.%-]+): error: (.*)")
+			if _ then
+				error = true
+				line_no = tonumber(line_no)
+			end
+		end
+	else
+		line_no = tonumber(line_no)
+	end
+
+	if not _ then
+		keep = false
+	end
+
+	if warning then
+		if warning:find("missing initializer", 1, true) then keep = false end
+		if warning:find("near initialization", 1, true) then keep = false end
+		if warning:find("unused parameter", 1, true) then keep = false end
+
+		warning = warning:gsub("`", "'")
+	end
+
+	if keep then
+		if error then
+			if not table.find(errors, function(_, r)
+				if r.line == line_no and r.msg == warning and r.file == file then return true end
+			end) then
+				table.insert(errors, { file = file, line = line_no, msg = warning })
+			end
+		else
+			if not table.find(warnings, function(_, r)
+				if r.line == line_no and r.msg == warning and r.file == file then return true end
+			end) then
+				table.insert(warnings, { file = file, line = line_no, msg = warning })
+			end
+		end
+	end
 
 end
+
+f:close()
+
+table.sort(warnings, function(first, second)
+	if first.file == second.file then
+		return first.line < second.line
+	else
+		return first.file < second.file
+	end
+end)
 
 print "<ul>"
 
-for i = 1, #keeps do
+for _, warning in pairs(errors) do
+	if warning.line then
+		print("<li><b><a href='http://dev.rephial.org/trac/browser/trunk/src/" .. warning.file .. "#L" .. warning.line ..
+		      "'>" .. warning.file .. ":" .. warning.line .. "</a>: " .. warning.msg .. "</b>")
+	else
+		print("<li><b><a href='http://dev.rephial.org/trac/browser/trunk/src/" .. warning.file ..
+		      "'>" .. warning.file .. "</a>: " .. warning.msg .. "</b>")
+	end
+end
 
-  if keeps[i] then
-    print("<li><a href='http://dev.rephial.org/trac/browser/trunk/src/" .. keeps[i].file .. "#L" .. keeps[i].line ..
-          "'>" .. keeps[i].file .. ":" .. keeps[i].line .. "</a>: " .. keeps[i].warning)
-  end
 
+for _, warning in pairs(warnings) do
+	print("<li><a href='http://dev.rephial.org/trac/browser/trunk/src/" .. warning.file .. "#L" .. warning.line ..
+	      "'>" .. warning.file .. ":" .. warning.line .. "</a>: " .. warning.msg)
 end
 
 print "</ul>"
 
-os.execute(string.format("twyt tweet -u angband Angband built, %d warnings.", #keeps))
-
+-- Write the status message.
+status = io.open("out/status", "w")
+status:write(string.format("Angband built, %d warnings, %d errors.", #warnings, #errors))
+status:close()

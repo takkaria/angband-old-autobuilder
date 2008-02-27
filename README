@@ -11,7 +11,7 @@ properly you'll need:
  - UPX, the executable packer
  - Lua 5.1, in a place findable by /usr/bin/env
 
-Optionally, if you want to enable Twitter support, you will need:
+Optionally, if you want to use Twitter, you will need:
  - Twyt (http://andrewprice.me.uk/projects/twyt/)
 
 On debian systems, the above can be obtained by:
@@ -22,10 +22,18 @@ And to use the Twitter support, you will also need:
 Using
 =====
 
-To use, simply run:
+To use for the first time, simply run:
 
   ~/autobuilder$ ./build-pdcurses
   ~/autobuilder$ ./compile
+
+It is suggested that for an autobuild, you would want to set up a cronjob
+running something along the lines of:
+
+  $ cd ~/autobuilder
+  $ nice ./compile >stdout.txt 2>stderr.txt
+  $ ./indexer stderr.txt >out/warnings.html
+  $ twyt tweet -u angband `cat out/status`
 
 
 The scripts
