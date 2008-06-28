@@ -27,6 +27,11 @@ else
 	fi
 fi
 
+# Obtain revision
+cd trunk &&
+	REVISION=`svn info | grep ^Revision: | cut -d' ' -f2` &&
+	cd ..
+
 # Copy
 cp -r trunk b/native &&
   cp -r trunk b/console &&
@@ -34,22 +39,25 @@ cp -r trunk b/native &&
 
 # Windows native build
 cd $NIGHTLY/b/native &&
-  make -C src -f Makefile.win CROSS="ccache i586-mingw32msvc-" MINGW=yes &&
-  scripts/pkg_win angband-$DATE $OUT/angband-$DATE.zip &&
+  make -C src -f Makefile.win CROSS="ccache i586-mingw32msvc-" MINGW=yes \
+    CFLAGS+="-DBUILD_ID=\\\"r$REVISION\\\"" &&
+  scripts/pkg_win angband-r$REVISION $OUT/angband-r$REVISION.zip &&
   echo "Windows build success."
 
 # Windows console build
 cd $NIGHTLY/b/console &&
   make -C src -f Makefile.win CROSS="ccache i586-mingw32msvc-" CONSOLE=yes \
-    PDCURSES_INC=$PDC_INC PDCURSES_LIB=$PDC_LIB MINGW=yes &&
-  scripts/pkg_win angband-$DATE-con $OUT/angband-$DATE-con.zip &&
+    PDCURSES_INC=$PDC_INC PDCURSES_LIB=$PDC_LIB MINGW=yes \
+    CFLAGS+="-DBUILD_ID=\\\"r$REVISION\\\"" &&
+  scripts/pkg_win angband-r$REVISION-con $OUT/angband-r$REVISION-con.zip &&
   echo "Windows console build success."
 
 # Linux native build (ncurses)
 cd $NIGHTLY/b/linux &&
   ./autogen.sh &&
   ./configure --with-private-dirs &&
-  make &&
+  make \
+    CFLAGS+="-DBUILD_ID=\\\"r$REVISION\\\"" &&
   echo "Linux native build success."
 
 # End
