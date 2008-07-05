@@ -40,7 +40,7 @@ cp -r trunk b/native &&
 # Windows native build
 cd $NIGHTLY/b/native &&
   make -C src -f Makefile.win CROSS="ccache i586-mingw32msvc-" MINGW=yes \
-    CFLAGS+="-DBUILD_ID=\\\"r$REVISION\\\"" &&
+    BUILD_ID=\\\"r$REVISION\\\" &&
   scripts/pkg_win angband-r$REVISION $OUT/angband-r$REVISION.zip &&
   echo "Windows build success."
 
@@ -48,7 +48,7 @@ cd $NIGHTLY/b/native &&
 cd $NIGHTLY/b/console &&
   make -C src -f Makefile.win CROSS="ccache i586-mingw32msvc-" CONSOLE=yes \
     PDCURSES_INC=$PDC_INC PDCURSES_LIB=$PDC_LIB MINGW=yes \
-    CFLAGS+="-DBUILD_ID=\\\"r$REVISION\\\"" &&
+    BUILD_ID=\\\"r$REVISION\\\" &&
   scripts/pkg_win angband-r$REVISION-con $OUT/angband-r$REVISION-con.zip &&
   echo "Windows console build success."
 
@@ -56,8 +56,7 @@ cd $NIGHTLY/b/console &&
 cd $NIGHTLY/b/linux &&
   ./autogen.sh &&
   ./configure --with-private-dirs &&
-  make \
-    CFLAGS+="-DBUILD_ID=\\\"r$REVISION\\\"" &&
+  make &&
   echo "Linux native build success."
 
 # End
