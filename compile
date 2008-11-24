@@ -32,6 +32,16 @@ cd trunk &&
 	REVISION=`svn info | grep ^Revision: | cut -d' ' -f2` &&
 	cd ..
 
+# Avoid needless compiles
+if test -f oldrev; then
+	# Compare new with old, and if they are the same, exit painlessly
+	echo $REVISION | cmp oldrev && echo "Nothing to do." && exit 0 
+fi
+
+# Save old revision
+echo $REVISION>oldrev
+
+
 # Copy
 cp -r trunk b/native &&
   cp -r trunk b/console &&
@@ -53,11 +63,11 @@ cd $NIGHTLY/b/console &&
   echo "Windows console build success."
 
 # Linux native build (ncurses)
-cd $NIGHTLY/b/linux &&
-  ./autogen.sh &&
-  ./configure --with-private-dirs &&
-  make &&
-  echo "Linux native build success."
+#cd $NIGHTLY/b/linux &&
+#  ./autogen.sh &&
+#  ./configure --with-private-dirs &&
+#  make &&
+#  echo "Linux native build success."
 
 # End
 cd $NIGHTLY &&
