@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Config settings
+BRANCH=trunk
+SRC=src
+
 # Useful variables
 DATE=`date --iso -u`
 REALDATE=`date --iso=seconds`
@@ -14,21 +18,21 @@ mkdir -p $OUT b
 echo Builds started at `date --iso=seconds`.
 
 # Update SVN or check out, depending
-if test -d trunk ; then
-	cd trunk && svn update
+if test -d $SRC ; then
+	cd $SRC && svn update
 	if test $? -ne 0 ; then
 	  exit 1
 	fi
 	cd ..
 else
-	svn checkout http://dev.rephial.org/svn/trunk/
+	svn checkout http://dev.rephial.org/svn/$BRANCH $SRC
 	if test $? -ne 0 ; then
 	  exit 1
 	fi
 fi
 
 # Obtain revision
-cd trunk &&
+cd $SRC &&
 	REVISION=`svn info | grep ^Revision: | cut -d' ' -f2` &&
 	cd ..
 
@@ -43,9 +47,9 @@ echo $REVISION>oldrev
 
 
 # Copy
-cp -r trunk b/native &&
-  cp -r trunk b/console &&
-  cp -r trunk b/linux
+cp -r $SRC b/native &&
+  cp -r $SRC b/console &&
+  cp -r $SRC b/linux
 
 # Windows native build
 cd $NIGHTLY/b/native &&
