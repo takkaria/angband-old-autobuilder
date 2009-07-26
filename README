@@ -8,7 +8,6 @@ properly you'll need:
  - Subversion
  - mingw32, the GCC cross-compiler for Windows
  - ccache, a caching layer for compilation
- - UPX, the executable packer
  - Lua 5.1, in a place findable by /usr/bin/env
 
 Optionally, if you want to use Twitter, you will need:

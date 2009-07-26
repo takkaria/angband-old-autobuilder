@@ -25,7 +25,7 @@ if test -d $SRC ; then
 	fi
 	cd ..
 else
-	svn checkout http://dev.rephial.org/svn/$BRANCH $SRC
+	svn checkout svn:://rephial.org/angband/$BRANCH $SRC
 	if test $? -ne 0 ; then
 	  exit 1
 	fi
